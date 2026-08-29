@@ -138,7 +138,7 @@ export function useConversations() {
 
     // Subscribe to conversation updates
     const channel = supabase
-      .channel('conversations-updates')
+      .channel(`conversations-updates-${user.id}-${Math.random()}`)
       .on(
         'postgres_changes',
         {
