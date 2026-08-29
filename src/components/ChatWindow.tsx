@@ -54,15 +54,42 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     ? otherParticipant?.avatar_url
     : conversation.avatar_url;
 
-  const onlineStatus = conversation.type === 'direct'
-    ? otherParticipant?.status
-    : null;
-
   const isGroupCreator = conversation.type === 'group' && conversation.created_by === user?.id;
   const isDirect = conversation.type === 'direct';
   const otherUserId = isDirect ? otherParticipant?.id : null;
   const isBlocked = otherUserId ? blockedUsers.has(otherUserId) : false;
   const isFavorite = otherUserId ? favoriteUsers.has(otherUserId) : false;
+
+  const [realtimeStatus, setRealtimeStatus] = useState<string | null>(isDirect ? otherParticipant?.status || null : null);
+
+  // Keep realtimeStatus in sync when active conversation changes
+  useEffect(() => {
+    setRealtimeStatus(isDirect ? otherParticipant?.status || null : null);
+  }, [conversation.id, otherParticipant?.status, isDirect]);
+
+  // Poll for the other user's status to ensure real-time accuracy
+  useEffect(() => {
+    if (!otherUserId) return;
+
+    const fetchStatus = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('status')
+        .eq('id', otherUserId)
+        .single();
+        
+      if (data && data.status) {
+        setRealtimeStatus(data.status as string);
+      }
+    };
+
+    // Fetch immediately
+    fetchStatus();
+
+    // Poll every 15 seconds
+    const interval = setInterval(fetchStatus, 15000);
+    return () => clearInterval(interval);
+  }, [otherUserId]);
 
   const handleCopyLink = () => {
     if (conversation.invite_token) {
@@ -108,7 +135,7 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
               {chatName.charAt(0).toUpperCase()}
             </div>
           )}
-          {onlineStatus === 'online' && <div className="online-dot header-dot" />}
+          {realtimeStatus === 'online' && <div className="online-dot header-dot" />}
         </div>
         <div 
           className="chat-header-info" 
@@ -118,9 +145,9 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
           <h3>{chatName}</h3>
           <span className="chat-header-status">
             {conversation.type === 'direct'
-              ? onlineStatus === 'online'
+              ? realtimeStatus === 'online'
                 ? 'Online'
-                : onlineStatus === 'away'
+                : realtimeStatus === 'away'
                   ? 'Away'
                   : 'Offline'
               : `${conversation.participants?.length || 0} members (Tap to view)`}
