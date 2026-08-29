@@ -7,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function test() {
   console.log("Creating dummy user...");
-  const dummyEmail = `test${Date.now()}@example.com`;
+  const dummyEmail = `test${Date.now()}@gmail.com`;
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: dummyEmail,
     password: 'password123'
@@ -29,7 +29,8 @@ async function test() {
       .insert({
         type: 'group',
         name: 'Test Group',
-        created_by: authData.user.id
+        created_by: authData.user.id,
+        invite_token: crypto.randomUUID()
       })
       .select()
       .single();
