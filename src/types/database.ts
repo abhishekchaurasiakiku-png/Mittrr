@@ -46,7 +46,7 @@ export interface Message {
 export interface Status {
   id: string;
   user_id: string;
-  type: 'text' | 'image';
+  type: 'text' | 'image' | 'video';
   content: string;
   bg_color: string | null;
   created_at: string;

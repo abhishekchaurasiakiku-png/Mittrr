@@ -25,6 +25,15 @@ export default function StatusPanel() {
     if (!user) return;
     setLoading(true);
 
+    // Auto-cleanup expired statuses from the database (24 hours logic)
+    supabase
+      .from('statuses')
+      .delete()
+      .lt('expires_at', new Date().toISOString())
+      .then(({ error }) => {
+        if (error) console.error('Failed to cleanup expired statuses:', error);
+      });
+
     // Get active statuses (not expired)
     const { data, error } = await supabase
       .from('statuses')
@@ -155,6 +164,7 @@ export default function StatusPanel() {
           onClose={() => setViewingGroupIndex(null)}
           onNextUser={handleNextUser}
           onPrevUser={handlePrevUser}
+          onDeleteStatus={() => fetchStatuses()}
         />
       )}
 
@@ -163,6 +173,7 @@ export default function StatusPanel() {
           statuses={myStatuses}
           userProfile={profile}
           onClose={() => setViewingMyStatus(false)}
+          onDeleteStatus={() => fetchStatuses()}
         />
       )}
     </div>

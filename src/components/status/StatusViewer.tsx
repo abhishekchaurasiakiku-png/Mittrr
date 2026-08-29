@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiX, FiChevronLeft, FiChevronRight, FiTrash2 } from 'react-icons/fi';
 import type { Status, Profile } from '../../types/database';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,23 +13,26 @@ interface StatusViewerProps {
   onClose: () => void;
   onNextUser?: () => void;
   onPrevUser?: () => void;
+  onDeleteStatus?: (statusId: string) => void;
 }
 
-export default function StatusViewer({ statuses, userProfile, onClose, onNextUser, onPrevUser }: StatusViewerProps) {
+export default function StatusViewer({ statuses, userProfile, onClose, onNextUser, onPrevUser, onDeleteStatus }: StatusViewerProps) {
   const { user } = useAuth();
   const { createConversation } = useConversations();
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentStatus = statuses[currentIndex];
   const [reacting, setReacting] = useState(false);
 
+  const duration = currentStatus?.type === 'video' ? 45000 : 30000;
+
   useEffect(() => {
-    // Auto advance every 30 seconds
+    // Auto advance based on type
     const timer = setTimeout(() => {
       if (!reacting) handleNext();
-    }, 30000);
+    }, duration);
 
     return () => clearTimeout(timer);
-  }, [currentIndex, statuses, reacting]);
+  }, [currentIndex, statuses, reacting, duration]);
 
   const handleNext = () => {
     if (currentIndex < statuses.length - 1) {
@@ -72,6 +75,15 @@ export default function StatusViewer({ statuses, userProfile, onClose, onNextUse
     }
   };
 
+  const handleDelete = async () => {
+    if (!currentStatus || !onDeleteStatus) return;
+    if (window.confirm("Are you sure you want to delete this status?")) {
+      await supabase.from('statuses').delete().eq('id', currentStatus.id);
+      onDeleteStatus(currentStatus.id);
+      handleNext();
+    }
+  };
+
   if (!currentStatus) return null;
 
   return createPortal(
@@ -83,7 +95,7 @@ export default function StatusViewer({ statuses, userProfile, onClose, onNextUse
               className="progress-bar-fill" 
               style={{ 
                 width: idx < currentIndex ? '100%' : idx === currentIndex ? '100%' : '0%',
-                transition: idx === currentIndex ? 'width 30s linear' : 'none'
+                transition: idx === currentIndex ? `width ${statuses[idx].type === 'video' ? 45 : 30}s linear` : 'none'
               }} 
             />
           </div>
@@ -102,9 +114,16 @@ export default function StatusViewer({ statuses, userProfile, onClose, onNextUse
             <span className="time">{formatDistanceToNow(new Date(currentStatus.created_at))} ago</span>
           </div>
         </div>
-        <button className="status-close-btn" onClick={onClose}>
-          <FiX size={24} />
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {user && currentStatus.user_id === user.id && (
+            <button className="status-close-btn" onClick={handleDelete} title="Delete Status">
+              <FiTrash2 size={22} color="var(--red)" />
+            </button>
+          )}
+          <button className="status-close-btn" onClick={onClose}>
+            <FiX size={24} />
+          </button>
+        </div>
       </div>
 
       <div className="status-viewer-content" onClick={(e) => {
@@ -123,6 +142,10 @@ export default function StatusViewer({ statuses, userProfile, onClose, onNextUse
             style={{ background: currentStatus.bg_color || '#111128' }}
           >
             <p>{currentStatus.content}</p>
+          </div>
+        ) : currentStatus.type === 'video' ? (
+          <div className="status-image-view">
+            <video src={currentStatus.content} autoPlay muted playsInline style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           </div>
         ) : (
           <div className="status-image-view">

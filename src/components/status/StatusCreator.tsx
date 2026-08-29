@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { FiX, FiImage, FiType, FiSend } from 'react-icons/fi';
+import { FiX, FiImage, FiType, FiSend, FiVideo } from 'react-icons/fi';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,11 +16,11 @@ const BG_COLORS = [
 
 export default function StatusCreator({ onClose, onSuccess }: StatusCreatorProps) {
   const { user } = useAuth();
-  const [type, setType] = useState<'text' | 'image'>('text');
+  const [type, setType] = useState<'text' | 'image' | 'video'>('text');
   const [text, setText] = useState('');
   const [bgColor, setBgColor] = useState(BG_COLORS[0]);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,29 +28,33 @@ export default function StatusCreator({ onClose, onSuccess }: StatusCreatorProps
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-      setType('image');
+      if (file.type.startsWith('video/') && file.size > 15 * 1024 * 1024) {
+        alert('Video must be less than 15MB');
+        return;
+      }
+      setMediaFile(file);
+      setMediaPreview(URL.createObjectURL(file));
+      setType(file.type.startsWith('video/') ? 'video' : 'image');
     }
   };
 
   const handlePost = async () => {
     if (!user) return;
     if (type === 'text' && !text.trim()) return;
-    if (type === 'image' && !imageFile) return;
+    if ((type === 'image' || type === 'video') && !mediaFile) return;
 
     setUploading(true);
 
     try {
       let content = text;
       
-      if (type === 'image' && imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
+      if ((type === 'image' || type === 'video') && mediaFile) {
+        const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('status-media')
-          .upload(fileName, imageFile);
+          .upload(fileName, mediaFile);
 
         if (uploadError) throw uploadError;
 
@@ -95,10 +99,19 @@ export default function StatusCreator({ onClose, onSuccess }: StatusCreatorProps
           className={`status-tab ${type === 'image' ? 'active' : ''}`}
           onClick={() => {
             setType('image');
-            if (!imagePreview) fileInputRef.current?.click();
+            if (!mediaPreview || type === 'video') fileInputRef.current?.click();
           }}
         >
           <FiImage /> Image
+        </button>
+        <button 
+          className={`status-tab ${type === 'video' ? 'active' : ''}`}
+          onClick={() => {
+            setType('video');
+            if (!mediaPreview || type === 'image') fileInputRef.current?.click();
+          }}
+        >
+          <FiVideo /> Video
         </button>
       </div>
 
@@ -117,19 +130,23 @@ export default function StatusCreator({ onClose, onSuccess }: StatusCreatorProps
           />
         ) : (
           <div className="status-image-preview">
-            {imagePreview ? (
-              <img src={imagePreview} alt="Status Preview" />
+            {mediaPreview ? (
+              type === 'video' ? (
+                <video src={mediaPreview} controls style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '12px' }} />
+              ) : (
+                <img src={mediaPreview} alt="Status Preview" />
+              )
             ) : (
               <button className="status-upload-btn" onClick={() => fileInputRef.current?.click()}>
-                <FiImage size={40} />
-                <span>Select Image</span>
+                {type === 'video' ? <FiVideo size={40} /> : <FiImage size={40} />}
+                <span>Select {type === 'video' ? 'Video' : 'Image'}</span>
               </button>
             )}
             <input 
               type="file" 
               ref={fileInputRef} 
               style={{ display: 'none' }} 
-              accept="image/*"
+              accept={type === 'video' ? 'video/mp4,video/x-m4v,video/*' : 'image/*'}
               onChange={handleFileSelect}
             />
           </div>
@@ -153,7 +170,7 @@ export default function StatusCreator({ onClose, onSuccess }: StatusCreatorProps
         <button 
           className="status-post-btn" 
           onClick={handlePost}
-          disabled={uploading || (type === 'text' && !text.trim()) || (type === 'image' && !imageFile)}
+          disabled={uploading || (type === 'text' && !text.trim()) || ((type === 'image' || type === 'video') && !mediaFile)}
         >
           {uploading ? <div className="input-spinner" /> : <FiSend size={20} />}
         </button>
