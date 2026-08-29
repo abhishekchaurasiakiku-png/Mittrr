@@ -917,8 +917,7 @@
 }
 
 .status-avatar.has-status {
-  border: 3px solid transparent;
-  background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box, var(--accent-gradient) border-box;
+  border: 2px solid var(--accent-secondary);
   padding: 2px;
 }
 
@@ -932,10 +931,24 @@
   flex-direction: column;
 }
 
-.status-creator-close, .status-close-btn {
+.status-creator-close {
   position: absolute;
   top: 1.5rem;
   right: 1.5rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10001;
+}
+
+.status-close-btn {
   background: rgba(0, 0, 0, 0.5);
   border: none;
   color: white;
