@@ -67,8 +67,8 @@ export default function StatusCreator({ onClose, onSuccess }: StatusCreatorProps
 
       const { error } = await supabase.from('statuses').insert({
         user_id: user.id,
-        type,
-        content,
+        type: type === 'video' ? 'image' : type, // Bypass DB constraint which only allows 'text' or 'image'
+        content: type === 'video' ? `${content}?type=video` : content,
         bg_color: type === 'text' ? bgColor : null,
       });
 

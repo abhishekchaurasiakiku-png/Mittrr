@@ -43,9 +43,12 @@ export default function StatusPanel() {
 
     if (!error && data) {
       const myActive = data.filter(s => s.user_id === user.id) as any;
-      setMyStatuses(myActive.map((s: any) => ({
-        id: s.id, user_id: s.user_id, type: s.type, content: s.content, bg_color: s.bg_color, created_at: s.created_at, expires_at: s.expires_at
-      })));
+      setMyStatuses(myActive.map((s: any) => {
+        const isVideoHack = s.type === 'image' && s.content.includes('?type=video');
+        return {
+          id: s.id, user_id: s.user_id, type: isVideoHack ? 'video' : s.type, content: s.content, bg_color: s.bg_color, created_at: s.created_at, expires_at: s.expires_at
+        };
+      }));
 
       const others = data.filter(s => s.user_id !== user.id) as any[];
       
@@ -56,8 +59,9 @@ export default function StatusPanel() {
         if (!grouped.has(prof.id)) {
           grouped.set(prof.id, { profile: prof, statuses: [] });
         }
+        const isVideoHack = s.type === 'image' && s.content.includes('?type=video');
         grouped.get(prof.id)?.statuses.push({
-          id: s.id, user_id: s.user_id, type: s.type, content: s.content, bg_color: s.bg_color, created_at: s.created_at, expires_at: s.expires_at
+          id: s.id, user_id: s.user_id, type: isVideoHack ? 'video' : s.type, content: s.content, bg_color: s.bg_color, created_at: s.created_at, expires_at: s.expires_at
         });
       });
 
