@@ -51,7 +51,7 @@ export default function JoinPage() {
         }
 
         // Successfully joined or already in the group
-        navigate('/', { replace: true });
+        navigate(`/?conv=${conv.id}`, { replace: true });
       } catch (err) {
         console.error(err);
         setError('An unexpected error occurred.');

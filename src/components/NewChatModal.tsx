@@ -60,7 +60,8 @@ export default function NewChatModal({ isOpen, onClose, onCreateChat, defaultTyp
   };
 
   const handleCreate = () => {
-    if (selectedUsers.length === 0) return;
+    // Only require selecting a user for direct messages
+    if (!isGroup && selectedUsers.length === 0) return;
 
     const ids = selectedUsers.map((u) => u.id);
 
@@ -183,7 +184,7 @@ export default function NewChatModal({ isOpen, onClose, onCreateChat, defaultTyp
         <button
           className="modal-create-btn"
           onClick={handleCreate}
-          disabled={selectedUsers.length === 0}
+          disabled={!isGroup && selectedUsers.length === 0}
         >
           {isGroup ? 'Create Group' : 'Start Conversation'}
         </button>

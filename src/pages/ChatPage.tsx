@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useConversations } from '../hooks/useConversations';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import MainSidebar, { type MainTab } from '../components/MainSidebar';
@@ -20,8 +21,32 @@ export default function ChatPage() {
   const [activeTab, setActiveTab] = useState<MainTab>('chats');
   const [showMiddlePane, setShowMiddlePane] = useState(true);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // Track online status
   useOnlineStatus();
+
+  // Auto-select conversation if provided in URL
+  useEffect(() => {
+    const convId = searchParams.get('conv');
+    if (convId && conversations.length > 0) {
+      const conv = conversations.find(c => c.id === convId);
+      if (conv) {
+        setActiveConversationId(convId);
+        markAsRead(convId);
+        if (conv.type === 'group') {
+          setActiveTab('groups');
+        } else {
+          setActiveTab('chats');
+        }
+        if (isMobileView) setShowMiddlePane(false);
+        
+        // Clean up the URL
+        searchParams.delete('conv');
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [searchParams, conversations, isMobileView, markAsRead, setSearchParams]);
 
   // Handle responsive
   useEffect(() => {
