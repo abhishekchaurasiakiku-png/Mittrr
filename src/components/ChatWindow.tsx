@@ -74,20 +74,12 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     const fetchStatus = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('status, last_seen')
+        .select('status')
         .eq('id', otherUserId)
         .single();
         
-      if (data) {
-        let currentStatus = data.status;
-        if (currentStatus === 'online' && data.last_seen) {
-          const lastSeen = new Date(data.last_seen).getTime();
-          const now = new Date().getTime();
-          if (now - lastSeen > 120000) { // 2 minutes timeout
-            currentStatus = 'offline';
-          }
-        }
-        setRealtimeStatus(currentStatus as string);
+      if (data && data.status) {
+        setRealtimeStatus(data.status as string);
       }
     };
 
@@ -103,16 +95,8 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
         table: 'profiles',
         filter: `id=eq.${otherUserId}`
       }, (payload) => {
-        if (payload.new) {
-          let currentStatus = payload.new.status;
-          if (currentStatus === 'online' && payload.new.last_seen) {
-            const lastSeen = new Date(payload.new.last_seen).getTime();
-            const now = new Date().getTime();
-            if (now - lastSeen > 120000) {
-              currentStatus = 'offline';
-            }
-          }
-          setRealtimeStatus(currentStatus);
+        if (payload.new && payload.new.status) {
+          setRealtimeStatus(payload.new.status);
         }
       })
       .subscribe();
