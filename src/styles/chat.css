@@ -1,5 +1,5 @@
 .chat-page {
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
   background: var(--bg-primary);
@@ -8,7 +8,7 @@
 
 .app-layout {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
 }
 
@@ -16,7 +16,7 @@
 .main-sidebar {
   width: 72px;
   min-width: 72px;
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -74,7 +74,7 @@
 .middle-pane {
   width: 360px;
   min-width: 360px;
-  height: 100vh;
+  height: 100dvh;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   display: flex;
@@ -84,7 +84,7 @@
 
 .right-pane {
   flex: 1;
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
@@ -364,7 +364,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   background: var(--bg-primary);
 }
 
@@ -416,6 +416,7 @@
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
   z-index: 10;
+  flex-shrink: 0;
 }
 
 .chat-back-btn {

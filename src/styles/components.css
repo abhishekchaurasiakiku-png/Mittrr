@@ -229,6 +229,7 @@
   background: rgba(17, 17, 40, 0.8);
   backdrop-filter: blur(12px);
   border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .emoji-picker-wrapper {
@@ -788,6 +789,13 @@
   height: 8px;
   border-radius: var(--radius-full);
   background: currentColor;
+}
+
+.message-input-container {
+  padding: 1rem 1.25rem;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .profile-edit-btn {
