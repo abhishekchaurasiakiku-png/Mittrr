@@ -174,6 +174,10 @@ export default function StatusPanel() {
           userProfile={profile}
           onClose={() => setViewingMyStatus(false)}
           onDeleteStatus={() => fetchStatuses()}
+          onAddStatus={() => {
+            setViewingMyStatus(false);
+            setShowCreator(true);
+          }}
         />
       )}
     </div>

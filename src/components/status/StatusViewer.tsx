@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { FiX, FiChevronLeft, FiChevronRight, FiTrash2 } from 'react-icons/fi';
+import { FiX, FiChevronLeft, FiChevronRight, FiTrash2, FiPlus } from 'react-icons/fi';
 import type { Status, Profile } from '../../types/database';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,9 +14,10 @@ interface StatusViewerProps {
   onNextUser?: () => void;
   onPrevUser?: () => void;
   onDeleteStatus?: (statusId: string) => void;
+  onAddStatus?: () => void;
 }
 
-export default function StatusViewer({ statuses, userProfile, onClose, onNextUser, onPrevUser, onDeleteStatus }: StatusViewerProps) {
+export default function StatusViewer({ statuses, userProfile, onClose, onNextUser, onPrevUser, onDeleteStatus, onAddStatus }: StatusViewerProps) {
   const { user } = useAuth();
   const { createConversation } = useConversations();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -116,9 +117,16 @@ export default function StatusViewer({ statuses, userProfile, onClose, onNextUse
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {user && currentStatus.user_id === user.id && (
-            <button className="status-close-btn" onClick={handleDelete} title="Delete Status">
-              <FiTrash2 size={22} color="var(--red)" />
-            </button>
+            <>
+              {onAddStatus && (
+                <button className="status-close-btn" onClick={onAddStatus} title="Add New Status">
+                  <FiPlus size={24} />
+                </button>
+              )}
+              <button className="status-close-btn" onClick={handleDelete} title="Delete Status">
+                <FiTrash2 size={22} color="var(--red)" />
+              </button>
+            </>
           )}
           <button className="status-close-btn" onClick={onClose}>
             <FiX size={24} />
