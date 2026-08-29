@@ -35,6 +35,19 @@ export default function MainSidebar({ activeTab, onSelectTab }: MainSidebarProps
         >
           <FiActivity size={22} />
         </button>
+
+        {/* Profile button for mobile (hidden on desktop via CSS if needed, but it's simpler to just let CSS handle it. Wait, I'll add a specific mobile-only profile button here and hide it on desktop) */}
+        <button 
+          className={`main-nav-btn profile-btn mobile-profile-btn ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => onSelectTab('profile')}
+          title="Profile & Settings"
+        >
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt="Profile" className="main-sidebar-avatar" />
+          ) : (
+            <FiUser size={22} />
+          )}
+        </button>
       </div>
 
       <div className="main-sidebar-bottom">

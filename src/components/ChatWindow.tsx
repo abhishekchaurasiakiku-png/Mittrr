@@ -177,6 +177,20 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
                 &times;
               </button>
             </div>
+            
+            {isGroupCreator && (
+              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  onClick={handleCopyLink} 
+                  className="new-chat-btn" 
+                  style={{ width: '100%', margin: 0 }}
+                >
+                  {copiedLink ? <FiCheck /> : <FiLink />} 
+                  {copiedLink ? 'Link Copied!' : 'Copy Group Invite Link'}
+                </button>
+              </div>
+            )}
+
             <div className="modal-results">
               {conversation.participants?.map((p) => (
                 <div key={p.user_id} className="modal-user-item">

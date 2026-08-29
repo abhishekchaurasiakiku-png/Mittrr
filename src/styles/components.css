@@ -909,9 +909,9 @@
 }
 
 .status-avatar.has-status {
+  border: 3px solid transparent;
+  background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box, var(--accent-gradient) border-box;
   padding: 2px;
-  border: 2px solid var(--accent-primary);
-  background: var(--bg-secondary);
 }
 
 /* Status Creator Modal */

@@ -227,6 +227,7 @@ export function useConversations() {
 
     // Generate ID client-side so we know it without needing .select()
     const newConvId = crypto.randomUUID();
+    const inviteToken = type === 'group' ? Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10) : null;
 
     // Create new conversation
     const { error: convError } = await supabase
@@ -236,6 +237,7 @@ export function useConversations() {
         type,
         name: name || null,
         created_by: user.id,
+        invite_token: inviteToken,
       } as Record<string, unknown>);
 
     if (convError) {

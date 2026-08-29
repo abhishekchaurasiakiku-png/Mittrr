@@ -94,7 +94,7 @@ export default function StatusPanel() {
                 {profile?.username.charAt(0).toUpperCase()}
               </div>
             )}
-            <div className="status-add-badge">
+            <div className="status-add-badge" onClick={(e) => { e.stopPropagation(); setShowCreator(true); }}>
               <FiPlus />
             </div>
           </div>
