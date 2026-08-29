@@ -74,7 +74,15 @@ export default function Sidebar({
   const getOnlineStatus = (conv: ConversationWithDetails) => {
     if (conv.type === 'direct') {
       const other = conv.participants.find((p) => p.user_id !== user?.id)?.profile;
-      return other?.status || 'offline';
+      if (!other) return 'offline';
+      if (other.status === 'online' && other.last_seen) {
+        const lastSeen = new Date(other.last_seen).getTime();
+        const now = new Date().getTime();
+        if (now - lastSeen > 120000) { // 2 minutes
+          return 'offline';
+        }
+      }
+      return other.status;
     }
     return null;
   };

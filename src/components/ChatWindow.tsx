@@ -74,21 +74,56 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     const fetchStatus = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('status')
+        .select('status, last_seen')
         .eq('id', otherUserId)
         .single();
         
-      if (data && data.status) {
-        setRealtimeStatus(data.status as string);
+      if (data) {
+        let currentStatus = data.status;
+        if (currentStatus === 'online' && data.last_seen) {
+          const lastSeen = new Date(data.last_seen).getTime();
+          const now = new Date().getTime();
+          if (now - lastSeen > 120000) { // 2 minutes timeout
+            currentStatus = 'offline';
+          }
+        }
+        setRealtimeStatus(currentStatus as string);
       }
     };
 
     // Fetch immediately
     fetchStatus();
 
-    // Poll every 15 seconds
-    const interval = setInterval(fetchStatus, 15000);
-    return () => clearInterval(interval);
+    // Subscribe to real-time updates (works if publication is enabled)
+    const channel = supabase
+      .channel(`profile-status-${otherUserId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${otherUserId}`
+      }, (payload) => {
+        if (payload.new) {
+          let currentStatus = payload.new.status;
+          if (currentStatus === 'online' && payload.new.last_seen) {
+            const lastSeen = new Date(payload.new.last_seen).getTime();
+            const now = new Date().getTime();
+            if (now - lastSeen > 120000) {
+              currentStatus = 'offline';
+            }
+          }
+          setRealtimeStatus(currentStatus);
+        }
+      })
+      .subscribe();
+
+    // Poll every 5 seconds as a reliable fallback
+    const interval = setInterval(fetchStatus, 5000);
+    
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
   }, [otherUserId]);
 
   const handleCopyLink = () => {
