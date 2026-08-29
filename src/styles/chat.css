@@ -101,6 +101,7 @@
 /* Mobile Adjustments */
 .mobile-layout {
   flex-direction: column;
+  padding-top: max(env(safe-area-inset-top), 10px);
 }
 
 .mobile-layout .middle-pane {

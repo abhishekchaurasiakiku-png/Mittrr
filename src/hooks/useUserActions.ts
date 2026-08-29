@@ -68,26 +68,68 @@ export function useUserActions() {
 
   const blockUser = async (userId: string) => {
     if (!user) return false;
+    // Optimistic update
+    setBlockedUsers(prev => new Set([...prev, userId]));
     const { error } = await supabase.from('blocked_users').insert({ blocker_id: user.id, blocked_id: userId });
-    return !error;
+    if (error) {
+      // Revert if error
+      setBlockedUsers(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+      return false;
+    }
+    return true;
   };
 
   const unblockUser = async (userId: string) => {
     if (!user) return false;
+    // Optimistic update
+    setBlockedUsers(prev => {
+      const next = new Set(prev);
+      next.delete(userId);
+      return next;
+    });
     const { error } = await supabase.from('blocked_users').delete().eq('blocker_id', user.id).eq('blocked_id', userId);
-    return !error;
+    if (error) {
+      // Revert if error
+      setBlockedUsers(prev => new Set([...prev, userId]));
+      return false;
+    }
+    return true;
   };
 
   const favoriteUser = async (userId: string) => {
     if (!user) return false;
+    // Optimistic update
+    setFavoriteUsers(prev => new Set([...prev, userId]));
     const { error } = await supabase.from('favorite_users').insert({ user_id: user.id, favorite_id: userId });
-    return !error;
+    if (error) {
+      setFavoriteUsers(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+      return false;
+    }
+    return true;
   };
 
   const unfavoriteUser = async (userId: string) => {
     if (!user) return false;
+    // Optimistic update
+    setFavoriteUsers(prev => {
+      const next = new Set(prev);
+      next.delete(userId);
+      return next;
+    });
     const { error } = await supabase.from('favorite_users').delete().eq('user_id', user.id).eq('favorite_id', userId);
-    return !error;
+    if (error) {
+      setFavoriteUsers(prev => new Set([...prev, userId]));
+      return false;
+    }
+    return true;
   };
 
   return {
