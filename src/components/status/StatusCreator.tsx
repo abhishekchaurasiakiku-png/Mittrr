@@ -84,34 +84,35 @@ export default function StatusCreator({ onClose, onSuccess }: StatusCreatorProps
 
   return createPortal(
     <div className="status-creator-modal">
-      <button className="status-creator-close" onClick={onClose}>
-        <FiX size={24} />
-      </button>
-
-      <div className="status-creator-tabs">
-        <button 
-          className={`status-tab ${type === 'text' ? 'active' : ''}`}
-          onClick={() => setType('text')}
-        >
-          <FiType /> Text
-        </button>
-        <button 
-          className={`status-tab ${type === 'image' ? 'active' : ''}`}
-          onClick={() => {
-            setType('image');
-            if (!mediaPreview || type === 'video') fileInputRef.current?.click();
-          }}
-        >
-          <FiImage /> Image
-        </button>
-        <button 
-          className={`status-tab ${type === 'video' ? 'active' : ''}`}
-          onClick={() => {
-            setType('video');
-            if (!mediaPreview || type === 'image') fileInputRef.current?.click();
-          }}
-        >
-          <FiVideo /> Video
+      <div className="status-creator-header" style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', right: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10001 }}>
+        <div className="status-creator-tabs">
+          <button 
+            className={`status-tab ${type === 'text' ? 'active' : ''}`}
+            onClick={() => setType('text')}
+          >
+            <FiType /> Text
+          </button>
+          <button 
+            className={`status-tab ${type === 'image' ? 'active' : ''}`}
+            onClick={() => {
+              setType('image');
+              if (!mediaPreview || type === 'video') fileInputRef.current?.click();
+            }}
+          >
+            <FiImage /> Image
+          </button>
+          <button 
+            className={`status-tab ${type === 'video' ? 'active' : ''}`}
+            onClick={() => {
+              setType('video');
+              if (!mediaPreview || type === 'image') fileInputRef.current?.click();
+            }}
+          >
+            <FiVideo /> Video
+          </button>
+        </div>
+        <button className="status-creator-close" onClick={onClose}>
+          <FiX size={24} />
         </button>
       </div>
 
