@@ -153,6 +153,18 @@ export function useConversations() {
       .on(
         'postgres_changes',
         {
+          event: '*',
+          schema: 'public',
+          table: 'conversation_participants',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchConversations();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
@@ -261,7 +273,32 @@ export function useConversations() {
       return null;
     }
 
-    await fetchConversations();
+    // Optimistically add to state so it loads instantly
+    const newConv: ConversationWithDetails = {
+      id: newConvId,
+      type,
+      name: name || null,
+      created_by: user.id,
+      invite_token: inviteToken,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      participants: allParticipantIds.map((uid) => ({
+        conversation_id: newConvId,
+        user_id: uid,
+        joined_at: new Date().toISOString(),
+        last_read_at: new Date().toISOString(),
+        profile: uid === user.id ? user as any : DEFAULT_PROFILE // We don't have other profiles immediately, but it's enough to avoid stuck loading
+      })),
+      unread_count: 0
+    };
+
+    setConversations(prev => [newConv, ...prev]);
+
+    // Fetch proper data in background
+    setTimeout(() => {
+      fetchConversations();
+    }, 500);
+
     return newConvId;
   };
 
