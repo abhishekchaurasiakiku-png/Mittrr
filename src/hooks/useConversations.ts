@@ -278,6 +278,7 @@ export function useConversations() {
       id: newConvId,
       type,
       name: name || null,
+      avatar_url: null,
       created_by: user.id,
       invite_token: inviteToken,
       created_at: new Date().toISOString(),
