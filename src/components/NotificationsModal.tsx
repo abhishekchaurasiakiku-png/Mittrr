@@ -10,7 +10,7 @@ interface NotificationsModalProps {
   onRequestPermission?: () => Promise<boolean>;
 }
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function NotificationsModal({ notifications, onClose, onMarkAsRead, onMarkAllAsRead, onRequestPermission }: NotificationsModalProps) {
   const [permission, setPermission] = useState(Notification.permission);
