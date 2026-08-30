@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import { FiMail, FiLock, FiUser, FiUserPlus, FiLogIn, FiMessageCircle } from 'react-icons/fi';
 import '../styles/auth.css';
 
@@ -164,6 +165,12 @@ export default function AuthPage() {
         <button className="auth-toggle" onClick={toggleMode}>
           {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
         </button>
+
+        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+          <Link to="/admin/login" style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-tertiary)'}>
+            Admin Login
+          </Link>
+        </div>
       </div>
     </div>
   );
