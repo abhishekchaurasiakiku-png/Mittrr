@@ -199,41 +199,14 @@ export function useConversations() {
     if (type === 'direct' && participantIds.length === 1) {
       const otherUserId = participantIds[0];
 
-      // Get conversations where current user is a participant
-      const { data: myConvsRaw } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', user.id);
-
-      const myConvs = (myConvsRaw || []) as unknown as ConversationParticipant[];
-
-      if (myConvs.length > 0) {
-        for (const mc of myConvs) {
-          const { data: otherParticipantRaw } = await supabase
-            .from('conversation_participants')
-            .select('*')
-            .eq('conversation_id', mc.conversation_id)
-            .eq('user_id', otherUserId);
-
-          const otherParticipant = (otherParticipantRaw || []) as unknown as ConversationParticipant[];
-
-          if (otherParticipant.length > 0) {
-            // Check if it's a direct conversation
-            const { data: convRaw } = await supabase
-              .from('conversations')
-              .select('*')
-              .eq('id', mc.conversation_id)
-              .eq('type', 'direct')
-              .single();
-
-            const conv = convRaw as unknown as Conversation | null;
-
-            if (conv) {
-              await fetchConversations();
-              return conv.id;
-            }
-          }
-        }
+      // Check existing conversations in memory first (instant)
+      const existing = conversations.find(c => 
+        c.type === 'direct' && 
+        c.participants.some(p => p.user_id === otherUserId)
+      );
+      
+      if (existing) {
+        return existing.id;
       }
     }
 

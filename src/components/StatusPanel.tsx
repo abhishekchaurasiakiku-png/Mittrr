@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useConversations } from '../hooks/useConversations';
 import type { Profile, Status } from '../types/database';
 import { FiPlus } from 'react-icons/fi';
 import StatusCreator from './status/StatusCreator';
@@ -52,20 +53,46 @@ export default function StatusPanel() {
 
       const others = data.filter(s => s.user_id !== user.id) as any[];
       
-      // Group by user
-      const grouped = new Map<string, UserStatusGroup>();
-      others.forEach(s => {
-        const prof = s.profile as Profile;
-        if (!grouped.has(prof.id)) {
-          grouped.set(prof.id, { profile: prof, statuses: [] });
+      // Filter out statuses from people who are not in our conversations
+      const { data: participantData } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', user.id);
+        
+      if (participantData && participantData.length > 0) {
+        const myConvIds = participantData.map(p => p.conversation_id);
+        const { data: allParticipants } = await supabase
+          .from('conversation_participants')
+          .select('user_id')
+          .in('conversation_id', myConvIds)
+          .neq('user_id', user.id);
+          
+        if (allParticipants) {
+          const allowedUserIds = new Set(allParticipants.map(p => p.user_id));
+          
+          // Group by user
+          const grouped = new Map<string, UserStatusGroup>();
+          others.forEach(s => {
+            const prof = s.profile as Profile;
+            // Only add if they are in our allowed list
+            if (allowedUserIds.has(prof.id)) {
+              if (!grouped.has(prof.id)) {
+                grouped.set(prof.id, { profile: prof, statuses: [] });
+              }
+              const isVideoHack = s.type === 'image' && s.content.includes('?type=video');
+              grouped.get(prof.id)!.statuses.push({
+                id: s.id, user_id: s.user_id, type: isVideoHack ? 'video' : s.type, content: s.content, bg_color: s.bg_color, created_at: s.created_at, expires_at: s.expires_at
+              });
+            }
+          });
+          
+          setStatusGroups(Array.from(grouped.values()));
+        } else {
+          setStatusGroups([]);
         }
-        const isVideoHack = s.type === 'image' && s.content.includes('?type=video');
-        grouped.get(prof.id)?.statuses.push({
-          id: s.id, user_id: s.user_id, type: isVideoHack ? 'video' : s.type, content: s.content, bg_color: s.bg_color, created_at: s.created_at, expires_at: s.expires_at
-        });
-      });
-
-      setStatusGroups(Array.from(grouped.values()));
+      } else {
+        setStatusGroups([]);
+      }
     }
     setLoading(false);
   }, [user]);
