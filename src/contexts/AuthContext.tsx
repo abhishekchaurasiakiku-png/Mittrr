@@ -58,6 +58,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // If profile not found, try to create it using user's metadata (Fallback if DB trigger is missing)
+      if (error && error.code === 'PGRST116') {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user && userData.user.id === userId) {
+          const metadata = userData.user.user_metadata || {};
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              username: metadata.username || `user_${userId.substring(0, 8)}`,
+              full_name: metadata.full_name || metadata.username || 'User',
+              status: 'online',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            } as any)
+            .select()
+            .single();
+            
+          if (!insertError && newProfile) {
+            setProfile(newProfile as unknown as Profile);
+            return;
+          }
+        }
+      }
+
       // Profile might not be created yet (trigger delay), wait and retry
       if (i < retries - 1) {
         await new Promise((r) => setTimeout(r, 1000));
@@ -177,9 +202,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           (error as unknown as { status?: number }).status === 429
         ) {
           return { 
-            error: 'Supabase email rate limit reached. To allow unlimited users, please disable "Confirm email" in Supabase Dashboard (Authentication > Providers > Email).' 
+            error: 'Supabase email rate limit reached. To fix: Go to Supabase Dashboard -> Authentication -> Rate Limits -> Increase "Email sending rate limit" OR disable "Confirm email" in Providers -> Email.' 
           };
         }
+        
+        if (errMsg.toLowerCase().includes('email signups are disabled')) {
+          return {
+            error: 'Email signups are disabled. To fix: Go to Supabase Dashboard -> Authentication -> Providers -> Email -> Toggle ON "Enable Email Provider" and "Enable Email Signups".'
+          };
+        }
+
         return { error: error.message };
       }
 

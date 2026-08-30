@@ -34,6 +34,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: error.message });
       }
 
+      // Explicitly create profile (in case DB trigger is missing)
+      if (user?.user) {
+        await supabase.from('profiles').insert({
+          id: user.user.id,
+          username,
+          full_name: full_name || username,
+          status: 'online',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      }
+
       return res.status(200).json({ success: true, user: user.user });
     }
 
