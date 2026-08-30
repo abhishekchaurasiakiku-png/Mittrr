@@ -16,42 +16,24 @@ export default function JoinPage() {
       if (!user || !token) return;
 
       try {
-        // Find the conversation by token
-        const { data: conv, error: convError } = await supabase
-          .from('conversations')
-          .select('id, type, name')
-          .eq('invite_token', token)
-          .single();
+        // Use the secure Vercel API route to bypass RLS
+        const response = await fetch('/api/join-group', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token, user_id: user.id }),
+        });
 
-        if (convError || !conv) {
-          setError('Invalid or expired invite link.');
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.error || 'Failed to join the group.');
           return;
-        }
-
-        if (conv.type !== 'group') {
-          setError('This invite link is not for a group chat.');
-          return;
-        }
-
-        // Add the user to the conversation
-        const { error: insertError } = await supabase
-          .from('conversation_participants')
-          .insert({
-            conversation_id: conv.id,
-            user_id: user.id
-          });
-
-        if (insertError) {
-          // If the error is a unique constraint violation, it means they are already in the group
-          if (insertError.code !== '23505') { 
-             console.error(insertError);
-             setError('Failed to join the group.');
-             return;
-          }
         }
 
         // Successfully joined or already in the group
-        navigate(`/?conv=${conv.id}`, { replace: true });
+        navigate(`/?conv=${data.conversation_id}`, { replace: true });
       } catch (err) {
         console.error(err);
         setError('An unexpected error occurred.');

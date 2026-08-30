@@ -6,7 +6,8 @@ import { supabase } from '../lib/supabase';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import type { ConversationWithDetails } from '../types/database';
-import { FiArrowLeft, FiMoreVertical, FiStar, FiSlash, FiUserMinus, FiLink, FiCheck } from 'react-icons/fi';
+import { FiArrowLeft, FiMoreVertical, FiStar, FiSlash, FiUserMinus, FiLink, FiCheck, FiUserPlus } from 'react-icons/fi';
+import AddParticipantModal from './AddParticipantModal';
 
 interface ChatWindowProps {
   conversation: ConversationWithDetails | null;
@@ -21,6 +22,7 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showAddParticipant, setShowAddParticipant] = useState(false);
   const { blockedUsers, favoriteUsers, blockUser, unblockUser, favoriteUser, unfavoriteUser } = useUserActions();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -191,7 +193,16 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
               : `${conversation.participants?.length || 0} members (Tap to view)`}
           </span>
         </div>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {conversation.type === 'group' && (
+            <button 
+              className="chat-header-action" 
+              onClick={() => setShowAddParticipant(true)}
+              title="Add Participants"
+            >
+              <FiUserPlus size={20} />
+            </button>
+          )}
           <button className="chat-header-action" onClick={() => setShowMenu(!showMenu)}>
             <FiMoreVertical size={20} />
           </button>
@@ -318,6 +329,18 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
       {/* Input */}
       <MessageInput onSend={sendMessage} />
+
+      {conversation.type === 'group' && (
+        <AddParticipantModal
+          isOpen={showAddParticipant}
+          onClose={() => setShowAddParticipant(false)}
+          conversationId={conversation.id}
+          currentParticipantIds={conversation.participants?.map(p => p.user_id) || []}
+          onAddParticipants={() => {
+            // Auto-updates via realtime subscription in useConversations
+          }}
+        />
+      )}
     </div>
   );
 }
