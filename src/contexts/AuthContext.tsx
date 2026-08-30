@@ -8,7 +8,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, username: string, fullName: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, username: string, fullName: string) => Promise<{ error: string | null; autoLoggedIn?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: string | null }>;
@@ -110,29 +110,82 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, username: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username,
-          full_name: fullName,
+  const signUp = async (email: string, password: string, username: string, fullName: string): Promise<{ error: string | null; autoLoggedIn?: boolean }> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+            full_name: fullName,
+          },
         },
-      },
-    });
+      });
 
-    if (error) return { error: error.message };
-    return { error: null };
+      if (error) {
+        // If Supabase hits rate limit on email sending or requests
+        const errMsg = error.message || '';
+        if (
+          errMsg.toLowerCase().includes('rate limit') || 
+          errMsg.toLowerCase().includes('over_email_send_rate_limit') ||
+          errMsg.toLowerCase().includes('for security purposes') ||
+          (error as unknown as { status?: number }).status === 429
+        ) {
+          // Attempt direct sign-in in case credentials were saved or user exists
+          try {
+            const signInRes = await supabase.auth.signInWithPassword({ email, password });
+            if (!signInRes.error && signInRes.data.session) {
+              setSession(signInRes.data.session);
+              setUser(signInRes.data.session.user);
+              if (signInRes.data.session.user) {
+                await fetchProfile(signInRes.data.session.user.id);
+                await setOnlineStatus(signInRes.data.session.user.id, 'online');
+              }
+              return { error: null, autoLoggedIn: true };
+            }
+          } catch {
+            // Ignore fallback error
+          }
+          return { 
+            error: 'Account rate limit reached on email verification. If your account was already created, please click "Sign In" with your password.' 
+          };
+        }
+        return { error: error.message };
+      }
+
+      if (data?.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        if (data.session.user) {
+          await fetchProfile(data.session.user.id);
+          await setOnlineStatus(data.session.user.id, 'online');
+        }
+        return { error: null, autoLoggedIn: true };
+      }
+
+      return { error: null, autoLoggedIn: false };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Signup failed. Please try again.';
+      return { error: msg };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) return { error: error.message };
+    if (data?.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+      if (data.session.user) {
+        await fetchProfile(data.session.user.id);
+        await setOnlineStatus(data.session.user.id, 'online');
+      }
+    }
     return { error: null };
   };
 

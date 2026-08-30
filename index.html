@@ -4,15 +4,96 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="KIKU - A modern real-time chat application. Connect, message, and share with friends instantly." />
+    <meta name="description" content="KIKU - Ultra fast and modern real-time chat application." />
     <meta name="theme-color" content="#0a0a1a" />
+    <meta name="color-scheme" content="dark" />
     <title>KIKU - Chat</title>
+
+    <!-- Preconnect & DNS prefetch for rapid asset & API connections -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://sbqleiyzysrvpgiivztp.supabase.co" />
+    <link rel="dns-prefetch" href="https://sbqleiyzysrvpgiivztp.supabase.co" />
+
+    <!-- Google Font with display=swap for zero render-blocking -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Instant Pre-render Splash Styles -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0a0a1a;
+        color: #f0f0ff;
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+      }
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at center, #13132b 0%, #0a0a1a 100%);
+        z-index: 9999;
+      }
+      .initial-glow {
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(108, 92, 231, 0.25) 0%, rgba(0, 210, 211, 0.15) 50%, transparent 70%);
+        filter: blur(40px);
+        border-radius: 50%;
+        animation: pulseGlow 2s ease-in-out infinite alternate;
+      }
+      .initial-logo {
+        position: relative;
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 50%, #00d2d3 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.25rem;
+      }
+      .initial-bar-bg {
+        width: 140px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        overflow: hidden;
+        position: relative;
+      }
+      .initial-bar-fill {
+        width: 40%;
+        height: 100%;
+        background: linear-gradient(90deg, #6c5ce7, #00d2d3);
+        border-radius: 999px;
+        animation: barSlide 1.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      }
+      @keyframes pulseGlow {
+        from { transform: scale(0.85); opacity: 0.5; }
+        to { transform: scale(1.15); opacity: 0.9; }
+      }
+      @keyframes barSlide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(350%); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="initial-loader">
+        <div class="initial-glow"></div>
+        <div class="initial-logo">KIKU</div>
+        <div class="initial-bar-bg">
+          <div class="initial-bar-fill"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

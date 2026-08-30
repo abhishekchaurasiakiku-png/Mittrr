@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { FiSend, FiSmile } from 'react-icons/fi';
-import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
+import { Theme, type EmojiClickData } from 'emoji-picker-react';
+
+const LazyEmojiPicker = lazy(() => import('emoji-picker-react'));
 
 interface MessageInputProps {
   onSend: (content: string, type?: 'text' | 'image' | 'file', fileUrl?: string, fileName?: string) => void;
@@ -61,11 +63,13 @@ export default function MessageInput({ onSend }: MessageInputProps) {
     <div className="message-input-container">
       {showEmojiPicker && (
         <div className="emoji-picker-wrapper" ref={emojiPickerRef}>
-          <EmojiPicker 
-            onEmojiClick={onEmojiClick} 
-            theme={Theme.DARK}
-            lazyLoadEmojis={true}
-          />
+          <Suspense fallback={<div className="emoji-picker-loading" style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Loading emojis...</div>}>
+            <LazyEmojiPicker 
+              onEmojiClick={onEmojiClick} 
+              theme={Theme.DARK}
+              lazyLoadEmojis={true}
+            />
+          </Suspense>
         </div>
       )}
 

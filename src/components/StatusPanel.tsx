@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import type { Profile, Status } from '../types/database';
@@ -21,7 +21,7 @@ export default function StatusPanel() {
   const [viewingGroupIndex, setViewingGroupIndex] = useState<number | null>(null);
   const [viewingMyStatus, setViewingMyStatus] = useState(false);
 
-  const fetchStatuses = async () => {
+  const fetchStatuses = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
@@ -68,11 +68,11 @@ export default function StatusPanel() {
       setStatusGroups(Array.from(grouped.values()));
     }
     setLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchStatuses();
-  }, [user]);
+  }, [fetchStatuses]);
 
   const handleNextUser = () => {
     if (viewingGroupIndex !== null && viewingGroupIndex < statusGroups.length - 1) {

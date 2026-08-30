@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { FiX, FiChevronLeft, FiChevronRight, FiTrash2, FiPlus, FiFlag } from 'react-icons/fi';
 import type { Status, Profile } from '../../types/database';
@@ -27,16 +27,7 @@ export default function StatusViewer({ statuses, userProfile, onClose, onNextUse
 
   const duration = currentStatus?.type === 'video' ? 45000 : 30000;
 
-  useEffect(() => {
-    // Auto advance based on type
-    const timer = setTimeout(() => {
-      if (!reacting) handleNext();
-    }, duration);
-
-    return () => clearTimeout(timer);
-  }, [currentIndex, statuses, reacting, duration]);
-
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentIndex < statuses.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else if (onNextUser) {
@@ -44,15 +35,24 @@ export default function StatusViewer({ statuses, userProfile, onClose, onNextUse
     } else {
       onClose();
     }
-  };
+  }, [currentIndex, statuses.length, onNextUser, onClose]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     } else if (onPrevUser) {
       onPrevUser();
     }
-  };
+  }, [currentIndex, onPrevUser]);
+
+  useEffect(() => {
+    // Auto advance based on type
+    const timer = setTimeout(() => {
+      if (!reacting) handleNext();
+    }, duration);
+
+    return () => clearTimeout(timer);
+  }, [currentIndex, statuses, reacting, duration, handleNext]);
 
   const handleReact = async (emoji: string) => {
     if (!user || user.id === userProfile.id) return;

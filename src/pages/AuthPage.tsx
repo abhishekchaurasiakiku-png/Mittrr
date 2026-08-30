@@ -43,7 +43,7 @@ export default function AuthPage() {
         const result = await signUp(email, password, username.trim(), fullName.trim());
         if (result.error) {
           setError(result.error);
-        } else {
+        } else if (!result.autoLoggedIn) {
           setSignupSuccess(true);
         }
       }

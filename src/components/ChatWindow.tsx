@@ -205,10 +205,10 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
             }}>
               {isDirect && otherUserId && (
                 <>
-                  <button onClick={() => { isFavorite ? unfavoriteUser(otherUserId) : favoriteUser(otherUserId); setShowMenu(false); }} className="menu-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem', width: '100%', border: 'none', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left' }}>
+                  <button onClick={() => { if (isFavorite) { unfavoriteUser(otherUserId); } else { favoriteUser(otherUserId); } setShowMenu(false); }} className="menu-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem', width: '100%', border: 'none', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left' }}>
                     <FiStar fill={isFavorite ? "var(--accent-primary)" : "none"} color={isFavorite ? "var(--accent-primary)" : "currentColor"} /> {isFavorite ? 'Remove Favorite' : 'Add Favorite'}
                   </button>
-                  <button onClick={() => { isBlocked ? unblockUser(otherUserId) : blockUser(otherUserId); setShowMenu(false); }} className="menu-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem', width: '100%', border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', textAlign: 'left' }}>
+                  <button onClick={() => { if (isBlocked) { unblockUser(otherUserId); } else { blockUser(otherUserId); } setShowMenu(false); }} className="menu-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem', width: '100%', border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', textAlign: 'left' }}>
                     <FiSlash /> {isBlocked ? 'Unblock User' : 'Block User'}
                   </button>
                 </>
