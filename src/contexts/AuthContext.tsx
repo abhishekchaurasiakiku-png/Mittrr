@@ -163,6 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             username,
             full_name: fullName,
           },
+          emailRedirectTo: window.location.origin,
         },
       });
 

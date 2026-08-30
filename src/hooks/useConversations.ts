@@ -237,6 +237,7 @@ export function useConversations() {
 
     if (convError) {
       console.error('Error creating conversation:', convError);
+      alert('Error creating chat: ' + convError.message);
       return null;
     }
 
@@ -253,6 +254,7 @@ export function useConversations() {
 
     if (insertError) {
       console.error('Error adding participants:', insertError);
+      alert('Error adding participants: ' + insertError.message);
       return null;
     }
 

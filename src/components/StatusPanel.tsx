@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { useConversations } from '../hooks/useConversations';
 import type { Profile, Status } from '../types/database';
 import { FiPlus } from 'react-icons/fi';
 import StatusCreator from './status/StatusCreator';
