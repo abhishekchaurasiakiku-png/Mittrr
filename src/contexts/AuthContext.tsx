@@ -104,13 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
-        fetchProfile(currentSession.user.id).then(() => {
-          setOnlineStatus(currentSession.user.id, 'online');
-        });
+        await fetchProfile(currentSession.user.id);
+        setOnlineStatus(currentSession.user.id, 'online');
       }
       setLoading(false);
     });

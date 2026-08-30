@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
 import { FiCamera } from 'react-icons/fi';
@@ -12,6 +12,15 @@ export default function ProfileEditPage() {
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { updateProfile } = useAuth();
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (profile && !initialized) {
+      setFullName(profile.full_name || '');
+      setUsername(profile.username || '');
+      setInitialized(true);
+    }
+  }, [profile, initialized]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
