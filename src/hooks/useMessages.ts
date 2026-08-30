@@ -15,7 +15,7 @@ const DEFAULT_PROFILE: Profile = {
 };
 
 export function useMessages(conversationId: string | null) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [messages, setMessages] = useState<MessageWithSender[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -149,7 +149,35 @@ export function useMessages(conversationId: string | null) {
       file_name: fileName || null,
     } as Record<string, unknown>);
 
-    if (error) console.error('Error sending message:', error);
+    if (error) {
+      console.error('Error sending message:', error);
+    } else {
+      // Trigger Web Push Notification
+      try {
+        const { data: participants } = await supabase
+          .from('conversation_participants')
+          .select('user_id')
+          .eq('conversation_id', conversationId)
+          .neq('user_id', user.id);
+          
+        if (participants && participants.length > 0) {
+          for (const p of participants) {
+            fetch('/api/send-push', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                receiver_id: p.user_id,
+                sender_name: profile?.full_name || profile?.username || 'Someone',
+                sender_avatar: profile?.avatar_url,
+                message_content: type === 'text' ? content : `Sent a ${type}`,
+              })
+            }).catch(e => console.error('Push API failed:', e));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to trigger push API', err);
+      }
+    }
   };
 
   // Delete message

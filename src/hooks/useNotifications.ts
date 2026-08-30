@@ -3,6 +3,23 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import type { Notification, NotificationWithSender, Profile } from '../types/database';
 
+const VAPID_PUBLIC_KEY = 'BFJBI2uIDwP3tFMLfHC2bmjAKz8mdB7eGYBG-FqRKfjtUftumqmLsCxaufvknhZGRg7OansdfgaVydM48-Rooxc';
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+  
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 export function useNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<NotificationWithSender[]>([]);
@@ -62,9 +79,38 @@ export function useNotifications() {
   useEffect(() => {
     if (!user) return;
     
-    if (Notification.permission === 'default') {
-      Notification.requestPermission();
+    async function initPush() {
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          const permission = await Notification.requestPermission();
+          
+          if (permission === 'granted') {
+            const subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
+            
+            // Save to DB
+            try {
+              const subJson = JSON.parse(JSON.stringify(subscription));
+              await supabase.from('push_subscriptions').insert({
+                user_id: user!.id,
+                subscription: subJson
+              });
+            } catch (err) {
+              // Ignore duplicate errors
+            }
+          }
+        } catch (error) {
+          console.error('Push setup failed:', error);
+        }
+      } else if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
     }
+    
+    initPush();
     
     fetchNotifications();
   }, [user, fetchNotifications]);
@@ -104,8 +150,9 @@ export function useNotifications() {
           setNotifications(prev => [notifWithSender, ...prev]);
           setUnreadCount(prev => prev + 1);
 
-          // Trigger browser notification
-          if (Notification.permission === 'granted') {
+          // Trigger browser notification (fallback if push doesn't work, though we usually just let SW handle it.
+          // However, we only show it here if we don't have SW handling it in foreground)
+          if (Notification.permission === 'granted' && !('serviceWorker' in navigator)) {
              const senderName = senderProfile?.full_name || senderProfile?.username || 'Someone';
              const title = `✨ A sweet message for you from ${senderName} ✨`;
              new Notification(title, {
