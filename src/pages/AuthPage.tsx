@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { FiMail, FiLock, FiUser, FiUserPlus, FiLogIn, FiMessageCircle } from 'react-icons/fi';
+import { FiMail, FiLock, FiUser, FiUserPlus, FiLogIn, FiMessageCircle, FiEye, FiEyeOff } from 'react-icons/fi';
 import '../styles/auth.css';
 
 export default function AuthPage() {
@@ -14,6 +14,7 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,14 +136,24 @@ export default function AuthPage() {
             <div className="auth-field-icon"><FiLock /></div>
             <input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
               autoComplete={isLogin ? 'current-password' : 'new-password'}
+              className="has-toggle"
             />
+            <button 
+              type="button" 
+              className="auth-field-toggle" 
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              tabIndex={-1}
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
           </div>
 
           {error && <div className="auth-error">{error}</div>}

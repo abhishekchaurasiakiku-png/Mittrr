@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
-import { FiLock, FiMail, FiShield, FiArrowLeft } from 'react-icons/fi';
+import { FiLock, FiMail, FiShield, FiArrowLeft, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import '../../styles/auth.css'; // Reuse auth styles
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -79,13 +80,23 @@ export default function AdminLogin() {
           <div className="auth-field">
             <div className="auth-field-icon"><FiLock /></div>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               autoComplete="current-password"
+              className="has-toggle"
             />
+            <button 
+              type="button" 
+              className="auth-field-toggle" 
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              tabIndex={-1}
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
           </div>
 
           {error && <div className="auth-error">{error}</div>}

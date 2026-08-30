@@ -176,6 +176,30 @@
   color: #7c3aed;
 }
 
+.auth-field-toggle {
+  position: absolute;
+  right: 14px;
+  color: rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+  z-index: 2;
+  outline: none;
+}
+
+.auth-field-toggle:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.auth-field input.has-toggle {
+  padding-right: 2.75rem;
+}
+
 /* Button */
 .auth-btn {
   display: flex;
