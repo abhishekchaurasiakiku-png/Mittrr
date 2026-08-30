@@ -57,6 +57,21 @@ export interface Status {
   expires_at: string;
 }
 
+export interface Notification {
+  id: string;
+  user_id: string;
+  sender_id: string | null;
+  conversation_id: string | null;
+  type: string;
+  content: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface NotificationWithSender extends Notification {
+  sender?: Profile;
+}
+
 // Extended types for UI
 export interface ConversationWithDetails extends Conversation {
   participants: (ConversationParticipant & { profile: Profile })[];
@@ -161,6 +176,30 @@ export interface Database {
           is_edited?: boolean;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      notifications: {
+        Row: Notification;
+        Insert: {
+          id?: string;
+          user_id: string;
+          sender_id?: string | null;
+          conversation_id?: string | null;
+          type: string;
+          content?: string | null;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          sender_id?: string | null;
+          conversation_id?: string | null;
+          type?: string;
+          content?: string | null;
+          is_read?: boolean;
+          created_at?: string;
         };
         Relationships: [];
       };
