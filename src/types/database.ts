@@ -7,6 +7,10 @@ export interface Profile {
   last_seen: string;
   created_at: string;
   updated_at: string;
+  account_status?: 'active' | 'suspended' | 'banned';
+  suspended_until?: string | null;
+  login_count?: number;
+  last_login_at?: string | null;
 }
 
 export interface Conversation {

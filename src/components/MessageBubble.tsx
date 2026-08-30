@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import type { MessageWithSender } from '../types/database';
-import { FiTrash2, FiEdit2, FiDownload, FiUserMinus, FiSlash } from 'react-icons/fi';
+import { FiTrash2, FiEdit2, FiDownload, FiUserMinus, FiSlash, FiFlag } from 'react-icons/fi';
 import { useState } from 'react';
 
 interface MessageBubbleProps {
@@ -12,9 +12,10 @@ interface MessageBubbleProps {
   onEdit: (id: string, content: string) => void;
   onRemoveUser?: (userId: string) => void;
   onBlockUser?: (userId: string) => void;
+  onReport?: (messageId: string) => void;
 }
 
-export default function MessageBubble({ message, isGroup, canManageMembers, onDelete, onEdit, onRemoveUser, onBlockUser }: MessageBubbleProps) {
+export default function MessageBubble({ message, isGroup, canManageMembers, onDelete, onEdit, onRemoveUser, onBlockUser, onReport }: MessageBubbleProps) {
   const { user } = useAuth();
   const isMine = user?.id === message.sender_id;
   const [showActions, setShowActions] = useState(false);
@@ -112,6 +113,11 @@ export default function MessageBubble({ message, isGroup, canManageMembers, onDe
             {onBlockUser && (
               <button onClick={() => onBlockUser(message.sender_id)} title="Block User" className="delete-action">
                 <FiSlash size={13} />
+              </button>
+            )}
+            {onReport && (
+              <button onClick={() => onReport(message.id)} title="Report Message" className="delete-action">
+                <FiFlag size={13} />
               </button>
             )}
           </div>

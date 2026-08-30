@@ -89,6 +89,25 @@ export default function StatusPanel() {
     }
   };
 
+  const handleReportStatus = async (statusId: string) => {
+    const reason = window.prompt("Reason for reporting this status?");
+    if (!reason || !user) return;
+
+    try {
+      const { error } = await supabase.from('reports').insert({
+        reporter_id: user.id,
+        target_type: 'status',
+        target_id: statusId,
+        reason
+      });
+      if (error) throw error;
+      alert("Status reported successfully.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to report status.");
+    }
+  };
+
   return (
     <div className="status-panel">
       <div className="sidebar-panel-header">
@@ -169,6 +188,7 @@ export default function StatusPanel() {
           onNextUser={handleNextUser}
           onPrevUser={handlePrevUser}
           onDeleteStatus={() => fetchStatuses()}
+          onReportStatus={handleReportStatus}
         />
       )}
 

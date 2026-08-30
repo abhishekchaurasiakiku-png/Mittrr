@@ -33,7 +33,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (!error && data) {
-        setProfile(data as unknown as Profile);
+        const profileData = data as unknown as Profile;
+        
+        // Enforce ban/suspend
+        if (profileData.account_status === 'banned') {
+          alert('Your account has been banned from the platform.');
+          await supabase.auth.signOut();
+          setProfile(null);
+          return;
+        }
+        
+        if (profileData.account_status === 'suspended') {
+          if (profileData.suspended_until && new Date(profileData.suspended_until) > new Date()) {
+            alert(`Your account is suspended until ${new Date(profileData.suspended_until).toLocaleString()}.`);
+            await supabase.auth.signOut();
+            setProfile(null);
+            return;
+          } else {
+            // Suspension expired, ideally update DB but for now just let them in
+          }
+        }
+
+        setProfile(profileData);
         return;
       }
 

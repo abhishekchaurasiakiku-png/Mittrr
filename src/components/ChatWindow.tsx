@@ -137,6 +137,25 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     }
   };
 
+  const handleReport = async (messageId: string) => {
+    const reason = window.prompt("Reason for reporting this message?");
+    if (!reason) return;
+
+    try {
+      const { error } = await supabase.from('reports').insert({
+        reporter_id: user?.id,
+        target_type: 'message',
+        target_id: messageId,
+        reason
+      });
+      if (error) throw error;
+      alert("Message reported successfully.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to report message.");
+    }
+  };
+
   return (
     <div className="chat-window">
       {/* Header */}
@@ -290,6 +309,7 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
               onEdit={editMessage}
               onRemoveUser={handleRemoveUser}
               onBlockUser={blockUser}
+              onReport={handleReport}
             />
           ))
         )}

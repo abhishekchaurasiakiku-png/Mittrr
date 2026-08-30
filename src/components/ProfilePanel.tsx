@@ -2,11 +2,12 @@ import ProfileEditPage from './settings/ProfileEditPage';
 import ThemePage from './settings/ThemePage';
 import PrivacyPage from './settings/PrivacyPage';
 import { useAuth } from '../contexts/AuthContext';
-import { FiLogOut, FiTrash2 } from 'react-icons/fi';
+import { FiLogOut, FiTrash2, FiShield } from 'react-icons/fi';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function ProfilePanel() {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
@@ -38,6 +39,13 @@ export default function ProfilePanel() {
         <section className="profile-panel-section account-actions">
           <h3 className="theme-section-title" style={{ paddingLeft: '1.25rem' }}>Account</h3>
           <div style={{ padding: '0 1.25rem 2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {user?.email === 'abhishekchaurasiakiku@gmail.com' && (
+              <Link to="/admin" target="_blank" className="settings-logout-btn" style={{ color: 'var(--text-primary)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', textDecoration: 'none' }}>
+                <FiShield size={16} />
+                <span>Admin Portal</span>
+              </Link>
+            )}
+
             <button className="settings-logout-btn" onClick={signOut}>
               <FiLogOut size={16} />
               <span>Logout</span>
