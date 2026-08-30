@@ -1,5 +1,6 @@
-import { FiMessageSquare, FiUsers, FiActivity, FiUser } from 'react-icons/fi';
+import { FiMessageSquare, FiUsers, FiActivity, FiUser, FiShield } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export type MainTab = 'chats' | 'groups' | 'status' | 'profile';
 
@@ -9,7 +10,8 @@ interface MainSidebarProps {
 }
 
 export default function MainSidebar({ activeTab, onSelectTab }: MainSidebarProps) {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="main-sidebar">
@@ -36,6 +38,17 @@ export default function MainSidebar({ activeTab, onSelectTab }: MainSidebarProps
           <FiActivity size={22} />
         </button>
 
+        {user?.email === 'abhishekchaurasiakiku@gmail.com' && (
+          <button 
+            className="main-nav-btn"
+            onClick={() => window.open('/admin', '_blank')}
+            title="Admin Portal"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            <FiShield size={22} />
+          </button>
+        )}
+
         {/* Profile button for mobile (hidden on desktop via CSS if needed, but it's simpler to just let CSS handle it. Wait, I'll add a specific mobile-only profile button here and hide it on desktop) */}
         <button 
           className={`main-nav-btn profile-btn mobile-profile-btn ${activeTab === 'profile' ? 'active' : ''}`}
@@ -51,6 +64,16 @@ export default function MainSidebar({ activeTab, onSelectTab }: MainSidebarProps
       </div>
 
       <div className="main-sidebar-bottom">
+        {user?.email === 'abhishekchaurasiakiku@gmail.com' && (
+          <button 
+            className="main-nav-btn desktop-admin-btn"
+            onClick={() => window.open('/admin', '_blank')}
+            title="Admin Portal"
+            style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}
+          >
+            <FiShield size={22} />
+          </button>
+        )}
         <button 
           className={`main-nav-btn profile-btn ${activeTab === 'profile' ? 'active' : ''}`}
           onClick={() => onSelectTab('profile')}

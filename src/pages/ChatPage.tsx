@@ -8,6 +8,7 @@ import ChatWindow from '../components/ChatWindow';
 import NewChatModal from '../components/NewChatModal';
 import ProfilePanel from '../components/ProfilePanel';
 import StatusPanel from '../components/StatusPanel';
+import ErrorBoundary from '../components/ErrorBoundary';
 import type { ConversationWithDetails } from '../types/database';
 import '../styles/chat.css';
 import '../styles/components.css';
@@ -144,10 +145,12 @@ export default function ChatPage() {
                 <p style={{ marginTop: '1rem', color: 'var(--text-tertiary)' }}>Loading conversation...</p>
               </div>
             ) : (
-              <ChatWindow
-                conversation={activeConversation}
-                onBack={isMobileView ? handleBackToList : undefined}
-              />
+              <ErrorBoundary>
+                <ChatWindow
+                  conversation={activeConversation}
+                  onBack={isMobileView ? handleBackToList : undefined}
+                />
+              </ErrorBoundary>
             )}
           </div>
         )}
