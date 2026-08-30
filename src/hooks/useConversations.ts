@@ -237,9 +237,19 @@ export function useConversations() {
       }
     }
 
+    const generateUUID = () => {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+
     // Generate ID client-side so we know it without needing .select()
-    const newConvId = crypto.randomUUID();
-    const inviteToken = type === 'group' ? crypto.randomUUID() : null;
+    const newConvId = generateUUID();
+    const inviteToken = type === 'group' ? generateUUID() : null;
 
     // Create new conversation
     const { error: convError } = await supabase
