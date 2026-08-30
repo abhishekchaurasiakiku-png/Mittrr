@@ -161,7 +161,7 @@ export default function AuthPage() {
               aria-label={showPassword ? 'Hide password' : 'Show password'}
               tabIndex={-1}
             >
-              {showPassword ? <FiEyeOff /> : <FiEye />}
+              {showPassword ? <FiEye /> : <FiEyeOff />}
             </button>
           </div>
 
