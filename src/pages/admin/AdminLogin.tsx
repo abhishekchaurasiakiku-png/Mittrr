@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useNavigate, Navigate } from 'react-router-dom';
-import { FiLock, FiMail } from 'react-icons/fi';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { FiLock, FiMail, FiShield, FiArrowLeft } from 'react-icons/fi';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import '../../styles/auth.css'; // Reuse auth styles
 
@@ -45,53 +45,77 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="auth-container" style={{ background: 'var(--bg-primary)' }}>
-      <div className="auth-card" style={{ border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
-        <div className="auth-header">
-          <div className="auth-logo" style={{ color: 'var(--red)', background: 'rgba(255, 59, 48, 0.1)' }}>
-            <FiLock size={32} />
+    <div className="auth-container">
+      <div className="auth-bg-effects">
+        <div className="auth-bg-orb auth-bg-orb-1" style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.6), transparent)' }} />
+        <div className="auth-bg-orb auth-bg-orb-2" style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.4), transparent)' }} />
+        <div className="auth-bg-orb auth-bg-orb-3" style={{ background: 'radial-gradient(circle, rgba(185,28,28,0.5), transparent)' }} />
+      </div>
+
+      <div className="auth-card" style={{ borderColor: 'rgba(239,68,68,0.2)', boxShadow: '0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(239,68,68,0.1) inset' }}>
+        <div className="auth-logo">
+          <div className="auth-logo-icon" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)', boxShadow: '0 8px 24px rgba(239,68,68,0.4)' }}>
+            <FiShield size={32} />
           </div>
-          <h1>Admin Portal</h1>
-          <p>Authorized personnel only</p>
+          <h1 style={{ background: 'linear-gradient(135deg, #fff, #fca5a5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            Admin Portal
+          </h1>
+          <p className="auth-subtitle">Authorized personnel only</p>
         </div>
 
-        {error && <div className="auth-error" style={{ background: 'rgba(255, 59, 48, 0.1)', color: 'var(--red)', border: '1px solid var(--red)' }}>{error}</div>}
-
         <form className="auth-form" onSubmit={handleLogin}>
-          <div className="form-group">
-            <label>Admin Email</label>
-            <div className="input-wrapper">
-              <FiMail className="input-icon" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
-                style={{ borderColor: 'var(--border-color)' }}
-              />
-            </div>
+          <div className="auth-field">
+            <div className="auth-field-icon"><FiMail /></div>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Admin email"
+              autoComplete="email"
+            />
           </div>
 
-          <div className="form-group">
-            <label>Password</label>
-            <div className="input-wrapper">
-              <FiLock className="input-icon" />
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                style={{ borderColor: 'var(--border-color)' }}
-              />
-            </div>
+          <div className="auth-field">
+            <div className="auth-field-icon"><FiLock /></div>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="current-password"
+            />
           </div>
 
-          <button type="submit" className="auth-btn" disabled={loading} style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}>
-            {loading ? <div className="btn-spinner" /> : 'Login to Admin'}
+          {error && <div className="auth-error">{error}</div>}
+
+          <button 
+            type="submit" 
+            className="auth-btn" 
+            disabled={loading}
+            style={{ 
+              background: 'linear-gradient(135deg, #dc2626, #991b1b)',
+              boxShadow: '0 4px 16px rgba(220,38,38,0.3)'
+            }}
+          >
+            {loading ? <div className="auth-spinner" /> : (
+              <>
+                <FiShield /> Login to Admin
+              </>
+            )}
           </button>
         </form>
+
+        <div className="auth-divider">
+          <span>Return</span>
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <Link to="/auth" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}>
+            <FiArrowLeft /> Back to User Login
+          </Link>
+        </div>
       </div>
     </div>
   );
