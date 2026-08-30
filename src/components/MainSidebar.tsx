@@ -1,6 +1,5 @@
 import { FiMessageSquare, FiUsers, FiActivity, FiUser, FiShield } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 export type MainTab = 'chats' | 'groups' | 'status' | 'profile';
 
@@ -11,7 +10,6 @@ interface MainSidebarProps {
 
 export default function MainSidebar({ activeTab, onSelectTab }: MainSidebarProps) {
   const { user, profile } = useAuth();
-  const navigate = useNavigate();
 
   return (
     <div className="main-sidebar">
