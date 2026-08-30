@@ -29,43 +29,19 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  if (!conversation) {
-    return (
-      <div className="chat-window-empty">
-        <div className="empty-chat-content">
-          <div className="empty-chat-icon">💬</div>
-          <h2>Welcome to KIKU</h2>
-          <p>Select a conversation or start a new one</p>
-        </div>
-      </div>
-    );
-  }
-
   // Get the other participant for direct chats
-  const otherParticipant = conversation.type === 'direct'
-    ? conversation.participants?.find((p) => p.user_id !== user?.id)?.profile
+  const isDirect = conversation?.type === 'direct';
+  const otherParticipant = isDirect
+    ? conversation?.participants?.find((p) => p.user_id !== user?.id)?.profile
     : null;
-
-  const chatName = conversation.type === 'direct'
-    ? otherParticipant?.full_name || otherParticipant?.username || 'Deleted User'
-    : conversation.name || 'Group Chat';
-
-  const chatAvatar = conversation.type === 'direct'
-    ? otherParticipant?.avatar_url
-    : conversation.avatar_url;
-
-  const isGroupCreator = conversation.type === 'group' && conversation.created_by === user?.id;
-  const isDirect = conversation.type === 'direct';
   const otherUserId = isDirect ? otherParticipant?.id : null;
-  const isBlocked = otherUserId ? blockedUsers.has(otherUserId) : false;
-  const isFavorite = otherUserId ? favoriteUsers.has(otherUserId) : false;
 
   const [realtimeStatus, setRealtimeStatus] = useState<string | null>(isDirect ? otherParticipant?.status || null : null);
 
   // Keep realtimeStatus in sync when active conversation changes
   useEffect(() => {
     setRealtimeStatus(isDirect ? otherParticipant?.status || null : null);
-  }, [conversation.id, otherParticipant?.status, isDirect]);
+  }, [conversation?.id, otherParticipant?.status, isDirect]);
 
   // Poll for the other user's status to ensure real-time accuracy
   useEffect(() => {
@@ -109,6 +85,30 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
       supabase.removeChannel(channel);
     };
   }, [otherUserId]);
+
+  if (!conversation) {
+    return (
+      <div className="chat-window-empty">
+        <div className="empty-chat-content">
+          <div className="empty-chat-icon">💬</div>
+          <h2>Welcome to KIKU</h2>
+          <p>Select a conversation or start a new one</p>
+        </div>
+      </div>
+    );
+  }
+
+  const chatName = conversation.type === 'direct'
+    ? otherParticipant?.full_name || otherParticipant?.username || 'Deleted User'
+    : conversation.name || 'Group Chat';
+
+  const chatAvatar = conversation.type === 'direct'
+    ? otherParticipant?.avatar_url
+    : conversation.avatar_url;
+
+  const isGroupCreator = conversation.type === 'group' && conversation.created_by === user?.id;
+  const isBlocked = otherUserId ? blockedUsers.has(otherUserId) : false;
+  const isFavorite = otherUserId ? favoriteUsers.has(otherUserId) : false;
 
   const handleCopyLink = () => {
     if (conversation.invite_token) {
