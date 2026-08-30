@@ -917,9 +917,8 @@
 }
 
 .status-avatar.has-status {
-  border: 2px solid var(--accent-secondary);
-  padding: 2px;
-  background-clip: content-box;
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
 }
 
 /* Status Creator Modal */
