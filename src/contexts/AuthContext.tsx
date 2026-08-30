@@ -112,6 +112,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, username: string, fullName: string): Promise<{ error: string | null; autoLoggedIn?: boolean }> => {
     try {
+      // 1. Try server API first if deployed on Vercel
+      try {
+        const res = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, username, full_name: fullName }),
+        });
+        if (res.ok) {
+          // Immediately sign in to get active session
+          const loginRes = await signIn(email, password);
+          if (!loginRes.error) {
+            return { error: null, autoLoggedIn: true };
+          }
+        }
+      } catch {
+        // Fallback to client-side supabase if API not available
+      }
+
+      // 2. Direct Supabase signUp
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -123,37 +142,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       });
 
-      if (error) {
-        // If Supabase hits rate limit on email sending or requests
-        const errMsg = error.message || '';
-        if (
-          errMsg.toLowerCase().includes('rate limit') || 
-          errMsg.toLowerCase().includes('over_email_send_rate_limit') ||
-          errMsg.toLowerCase().includes('for security purposes') ||
-          (error as unknown as { status?: number }).status === 429
-        ) {
-          // Attempt direct sign-in in case credentials were saved or user exists
-          try {
-            const signInRes = await supabase.auth.signInWithPassword({ email, password });
-            if (!signInRes.error && signInRes.data.session) {
-              setSession(signInRes.data.session);
-              setUser(signInRes.data.session.user);
-              if (signInRes.data.session.user) {
-                await fetchProfile(signInRes.data.session.user.id);
-                await setOnlineStatus(signInRes.data.session.user.id, 'online');
-              }
-              return { error: null, autoLoggedIn: true };
-            }
-          } catch {
-            // Ignore fallback error
-          }
-          return { 
-            error: 'Account rate limit reached on email verification. If your account was already created, please click "Sign In" with your password.' 
-          };
-        }
-        return { error: error.message };
-      }
-
       if (data?.session) {
         setSession(data.session);
         setUser(data.session.user);
@@ -162,6 +150,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await setOnlineStatus(data.session.user.id, 'online');
         }
         return { error: null, autoLoggedIn: true };
+      }
+
+      // 3. Attempt direct sign-in in case auto-confirmed or already registered
+      try {
+        const signInRes = await supabase.auth.signInWithPassword({ email, password });
+        if (!signInRes.error && signInRes.data?.session) {
+          setSession(signInRes.data.session);
+          setUser(signInRes.data.session.user);
+          if (signInRes.data.session.user) {
+            await fetchProfile(signInRes.data.session.user.id);
+            await setOnlineStatus(signInRes.data.session.user.id, 'online');
+          }
+          return { error: null, autoLoggedIn: true };
+        }
+      } catch {
+        // Continue
+      }
+
+      if (error) {
+        const errMsg = error.message || '';
+        if (
+          errMsg.toLowerCase().includes('rate limit') || 
+          errMsg.toLowerCase().includes('over_email_send_rate_limit') ||
+          errMsg.toLowerCase().includes('security purposes') ||
+          (error as unknown as { status?: number }).status === 429
+        ) {
+          return { 
+            error: 'Supabase email rate limit reached. To allow unlimited users, please disable "Confirm email" in Supabase Dashboard (Authentication > Providers > Email).' 
+          };
+        }
+        return { error: error.message };
       }
 
       return { error: null, autoLoggedIn: false };
