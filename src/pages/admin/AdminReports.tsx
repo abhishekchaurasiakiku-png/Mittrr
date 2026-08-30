@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { FiCheck, FiX, FiAlertTriangle } from 'react-icons/fi';
+import { FiCheck, FiX } from 'react-icons/fi';
 
 interface Report {
   id: string;

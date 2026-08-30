@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Profile } from '../../types/database';
-import { FiSearch, FiMoreVertical, FiShieldOff, FiTrash2, FiUserX } from 'react-icons/fi';
+import { FiSearch, FiMoreVertical, FiShieldOff, FiUserX } from 'react-icons/fi';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<Profile[]>([]);
