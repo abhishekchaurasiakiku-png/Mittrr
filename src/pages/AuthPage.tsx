@@ -31,6 +31,15 @@ export default function AuthPage() {
           setLoading(false);
           return;
         }
+
+        // Validate username allows only letters, numbers, and _ ? #
+        const usernameRegex = /^[a-zA-Z0-9_?#]+$/;
+        if (!usernameRegex.test(username.trim())) {
+          setError('Username can only contain letters, numbers, and special characters _ ? #');
+          setLoading(false);
+          return;
+        }
+
         const result = await signUp(email, password, username.trim(), fullName.trim());
         if (result.error) {
           setError(result.error);
