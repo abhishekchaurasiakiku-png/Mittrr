@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY; // Using anon key for now if service key is missing, but RLS on push_subscriptions should allow service role read. Wait, if using Anon key, RLS blocks read! So SUPABASE_SERVICE_ROLE_KEY must be provided in Vercel.
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://sbqleiyzysrvpgiivztp.supabase.co';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNicWxlaXl6eXNydnBnaWl2enRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODYzNzcsImV4cCI6MjEwMzU2MjM3N30.nCjoOs7u2Yn9GuyhhR1a4i355dusD6HmZr4n0ilFtlc';
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.warn('Missing Supabase credentials in API');
