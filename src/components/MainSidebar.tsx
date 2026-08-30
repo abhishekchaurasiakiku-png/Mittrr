@@ -13,7 +13,7 @@ interface MainSidebarProps {
 
 export default function MainSidebar({ activeTab, onSelectTab }: MainSidebarProps) {
   const { user, profile } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, requestPushPermission } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
 
   return (
@@ -126,6 +126,7 @@ export default function MainSidebar({ activeTab, onSelectTab }: MainSidebarProps
           onClose={() => setShowNotifications(false)}
           onMarkAsRead={markAsRead}
           onMarkAllAsRead={markAllAsRead}
+          onRequestPermission={requestPushPermission}
         />
       )}
     </div>

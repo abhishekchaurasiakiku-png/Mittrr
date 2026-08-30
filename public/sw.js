@@ -75,6 +75,8 @@ self.addEventListener('push', function (event) {
         body: data.body,
         icon: data.icon || '/vite.svg',
         badge: data.badge || '/vite.svg',
+        tag: 'kiku-new-message',
+        renotify: true,
         data: {
           url: data.url || '/',
         },

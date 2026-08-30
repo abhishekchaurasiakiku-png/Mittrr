@@ -7,9 +7,23 @@ interface NotificationsModalProps {
   onClose: () => void;
   onMarkAsRead: (id: string) => void;
   onMarkAllAsRead: () => void;
+  onRequestPermission?: () => Promise<boolean>;
 }
 
-export default function NotificationsModal({ notifications, onClose, onMarkAsRead, onMarkAllAsRead }: NotificationsModalProps) {
+import { useState, useEffect } from 'react';
+
+export default function NotificationsModal({ notifications, onClose, onMarkAsRead, onMarkAllAsRead, onRequestPermission }: NotificationsModalProps) {
+  const [permission, setPermission] = useState(Notification.permission);
+  const [loadingPermission, setLoadingPermission] = useState(false);
+
+  const handleRequestPermission = async () => {
+    if (onRequestPermission) {
+      setLoadingPermission(true);
+      await onRequestPermission();
+      setPermission(Notification.permission);
+      setLoadingPermission(false);
+    }
+  };
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 9999 }}>
       <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', width: '90%', padding: 0, overflow: 'hidden' }}>
@@ -27,6 +41,19 @@ export default function NotificationsModal({ notifications, onClose, onMarkAsRea
           </div>
         </div>
         
+        {permission !== 'granted' && onRequestPermission && (
+          <div style={{ padding: '0.75rem 1rem', background: 'rgba(var(--accent-primary-rgb), 0.1)', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Enable push notifications on this device</span>
+            <button 
+              onClick={handleRequestPermission}
+              disabled={loadingPermission}
+              style={{ padding: '0.4rem 0.8rem', background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+            >
+              {loadingPermission ? 'Enabling...' : 'Enable'}
+            </button>
+          </div>
+        )}
+
         <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
           {notifications.length === 0 ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-tertiary)' }}>

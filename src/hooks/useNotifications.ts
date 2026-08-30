@@ -83,22 +83,31 @@ export function useNotifications() {
       if ('serviceWorker' in navigator && 'PushManager' in window) {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js');
-          const permission = await Notification.requestPermission();
           
-          if (permission === 'granted') {
+          if (Notification.permission === 'granted') {
             const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
               applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
             });
             
-            // Save to DB
+            // Save to DB and deduplicate
             try {
               const subJson = JSON.parse(JSON.stringify(subscription));
-              const { error } = await supabase.from('push_subscriptions').insert({
-                user_id: user!.id,
-                subscription: subJson
-              });
-              if (error) console.error('Error saving push subscription to DB:', error);
+              
+              const { data: existingSubs } = await supabase
+                .from('push_subscriptions')
+                .select('id, subscription')
+                .eq('user_id', user!.id);
+                
+              const exists = existingSubs?.some(sub => sub.subscription.endpoint === subJson.endpoint);
+              
+              if (!exists) {
+                const { error } = await supabase.from('push_subscriptions').insert({
+                  user_id: user!.id,
+                  subscription: subJson
+                });
+                if (error) console.error('Error saving push subscription to DB:', error);
+              }
             } catch (err) {
               console.error('Error in push setup:', err);
             }
@@ -106,8 +115,6 @@ export function useNotifications() {
         } catch (error) {
           console.error('Push setup failed:', error);
         }
-      } else if (Notification.permission === 'default') {
-        Notification.requestPermission();
       }
     }
     
@@ -115,6 +122,40 @@ export function useNotifications() {
     
     fetchNotifications();
   }, [user, fetchNotifications]);
+
+  const requestPushPermission = async () => {
+    if (!user || !('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+    
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        
+        const subJson = JSON.parse(JSON.stringify(subscription));
+        const { data: existingSubs } = await supabase
+          .from('push_subscriptions')
+          .select('id, subscription')
+          .eq('user_id', user!.id);
+          
+        const exists = existingSubs?.some(sub => sub.subscription.endpoint === subJson.endpoint);
+        
+        if (!exists) {
+          await supabase.from('push_subscriptions').insert({
+            user_id: user.id,
+            subscription: subJson
+          });
+        }
+        return true;
+      }
+    } catch (err) {
+      console.error('Error requesting push permission:', err);
+    }
+    return false;
+  };
 
   // Subscribe to real-time new notifications
   useEffect(() => {
@@ -150,16 +191,6 @@ export function useNotifications() {
           
           setNotifications(prev => [notifWithSender, ...prev]);
           setUnreadCount(prev => prev + 1);
-
-          // Trigger browser notification directly if tab is open
-          if (Notification.permission === 'granted') {
-             const senderName = senderProfile?.full_name || senderProfile?.username || 'Someone';
-             const title = `✨ A sweet message for you from ${senderName} ✨`;
-             new Notification(title, {
-               body: newNotif.content ? `"${newNotif.content}"` : 'They sent you something nice! 💌',
-               icon: senderProfile?.avatar_url || '/favicon.ico'
-             });
-          }
         }
       )
       .on(
@@ -214,6 +245,7 @@ export function useNotifications() {
     loading,
     markAsRead,
     markAllAsRead,
-    refetch: fetchNotifications
+    refetch: fetchNotifications,
+    requestPushPermission
   };
 }
