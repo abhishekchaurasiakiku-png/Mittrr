@@ -107,9 +107,9 @@ export function useNotifications() {
           // Trigger browser notification
           if (Notification.permission === 'granted') {
              const senderName = senderProfile?.full_name || senderProfile?.username || 'Someone';
-             const title = `${senderName} texted you`;
+             const title = `✨ A sweet message for you from ${senderName} ✨`;
              new Notification(title, {
-               body: newNotif.content || 'New message',
+               body: newNotif.content ? `"${newNotif.content}"` : 'They sent you something nice! 💌',
                icon: senderProfile?.avatar_url || '/favicon.ico'
              });
           }
