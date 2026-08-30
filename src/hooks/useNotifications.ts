@@ -94,12 +94,13 @@ export function useNotifications() {
             // Save to DB
             try {
               const subJson = JSON.parse(JSON.stringify(subscription));
-              await supabase.from('push_subscriptions').insert({
+              const { error } = await supabase.from('push_subscriptions').insert({
                 user_id: user!.id,
                 subscription: subJson
               });
+              if (error) console.error('Error saving push subscription to DB:', error);
             } catch (err) {
-              // Ignore duplicate errors
+              console.error('Error in push setup:', err);
             }
           }
         } catch (error) {
@@ -150,9 +151,8 @@ export function useNotifications() {
           setNotifications(prev => [notifWithSender, ...prev]);
           setUnreadCount(prev => prev + 1);
 
-          // Trigger browser notification (fallback if push doesn't work, though we usually just let SW handle it.
-          // However, we only show it here if we don't have SW handling it in foreground)
-          if (Notification.permission === 'granted' && !('serviceWorker' in navigator)) {
+          // Trigger browser notification directly if tab is open
+          if (Notification.permission === 'granted') {
              const senderName = senderProfile?.full_name || senderProfile?.username || 'Someone';
              const title = `✨ A sweet message for you from ${senderName} ✨`;
              new Notification(title, {
